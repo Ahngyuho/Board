@@ -32,9 +32,8 @@ import java.util.Set;
         @Index(columnList = "createdAt"),
         @Index(columnList = "createdBy")
 })
-@EntityListeners(AuditingEntityListener.class)
 @Entity
-public class Article {
+public class Article extends AuditingFields{
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     //mysql 의 auto increment 는 IDENTITY 방식임 이걸 해줘야함
     private Long id;
@@ -57,15 +56,10 @@ public class Article {
                         //1쪽에서 댓글 리스트를 모두 뽑아보는 것은 굳이 그럴 필요가 없음
     private final Set<ArticleComment> articleComments = new LinkedHashSet<>();
 
-    //메타 데이터
-    //자동으로 jpa 가 세팅
-    //jpa auditing
-    @CreatedDate @Column(nullable = false) private LocalDateTime createdAt;
-    @CreatedBy @Column(nullable = false,length = 100) private String createdBy;    //여기에 들어가게 될 값은 따로 설정
 
-    @LastModifiedDate @Column(nullable = false) private LocalDateTime modifiedAt;
-    @LastModifiedBy @Column(nullable = false,length = 100) private String modifiedBy;
 
+    //추출은 크게 두가지로 가능
+    //@Embedded or mappedsuperclass
 
     protected Article(){
 

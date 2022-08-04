@@ -21,9 +21,8 @@ import java.util.Objects;
         @Index(columnList = "createdAt"),
         @Index(columnList = "createdBy")
 })
-@EntityListeners(AuditingEntityListener.class)
 @Entity
-public class ArticleComment {
+public class ArticleComment extends AuditingFields{
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
@@ -32,14 +31,6 @@ public class ArticleComment {
     private Article article;
     @Setter @Column(nullable = false,length = 500) private String content;
 
-    //메타 데이터
-    //자동으로 jpa 가 세팅
-    //jpa auditing
-    @CreatedDate @Column(nullable = false) private LocalDateTime createdAt;
-    @CreatedBy @Column(nullable = false,length = 100) private String createdBy;    //여기에 들어가게 될 값은 따로 설정
-
-    @LastModifiedDate @Column(nullable = false) private LocalDateTime modifiedAt;
-    @LastModifiedBy @Column(nullable = false,length = 100) private String modifiedBy;
 
     protected ArticleComment() {
 
