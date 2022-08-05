@@ -30,8 +30,34 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-rest'
 	implementation 'org.springframework.data:spring-data-rest-hal-explorer'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	// queryDSL 설정
+	implementation "com.querydsl:querydsl-jpa"
+	implementation "com.querydsl:querydsl-core"
+	implementation "com.querydsl:querydsl-collections"
+	annotationProcessor "com.querydsl:querydsl-apt:${dependencyManagement.importedProperties['querydsl.version']}:jpa"
+	annotationProcessor "jakarta.annotation:jakarta.annotation-api"
+	annotationProcessor	"jakarta.persistence:jakarta.persistence-api"
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+//Querydsl 설정
+def generated = 'src/main/generated'
+
+//querydsl QClass 파일 생성 위치 지정
+tasks.withType(JavaCompile) {
+	options.getGeneratedSourceOutputDirectory().set(file(generated))
+}
+
+//
+sourceSets {
+	main.java.srcDirs += [ generated ]
+}
+
+//gradle clean 할 때 generated를 삭제하라는 것
+clean {
+	delete file(generated)
 }
