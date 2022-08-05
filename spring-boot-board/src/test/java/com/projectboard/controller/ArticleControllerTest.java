@@ -23,7 +23,6 @@ class ArticleControllerTest {
         this.mvc = mvc;
     }
 
-    @Disabled("구현 중")
     @DisplayName("[view][GET] 게시글 리스트 {게시판} 페이지 - 정상 호출")
     @Test
     void giveNothing_whenRequestingArticlesView_thenReturnsArticlesView() throws Exception {
@@ -32,7 +31,7 @@ class ArticleControllerTest {
         //When & Then
         mvc.perform(get("/articles"))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType(MediaType.TEXT_HTML))
+                .andExpect(MockMvcResultMatchers.content().contentTypeCompatibleWith(MediaType.TEXT_HTML))
                 //view 이름도 테스트 할 수 있음 디렉토리도 적어줘야함 article(디렉토리)/index(html)
                 .andExpect(MockMvcResultMatchers.view().name("articles/index"))
                 //modelattribute 가 있는지 없는지 검사 이 articles라는 key값이 있는지
