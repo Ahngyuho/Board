@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>게시글 페이지</title>
+</head>
+<body>
+
+<header id="header"></header>
+
+  <main>
+    <header>
+      <h1>첫번째 글</h1>
+    </header>
+
+    <aside>
+      <p>Agh</p>
+      <p><a href="mailto:gyuho0897@gmail.com">gyuho0897@gmail.com</a></p>
+<!--      time 이라는 시멘틱 태그가 존재 잘 파싱 되도록 이게 시간이라고 알려주는것-->
+      <p><time datetime="2022-01-01T00:00:00">2022-01-01</time></p>
+      <p>#java</p>
+    </aside>
+
+<!--    하나의 구역 설정 이것도 시멘틱 태그-->
+    <section>
+      <p>본문<br><br></p>
+      <!--구역하나 더 생성-->
+      <div>
+        <form>
+          <label for="articleComment" hidden></label>
+          <textarea id="articleComment" placeholder="댓글 작성..." rows="3"></textarea>
+          <button type="submit">쓰기</button>
+        </form>
+
+<!--        기존 댓글 보여주기-->
+        <ul>
+          <li>
+            <div>
+<!--              작성 시간-->
+              <time><small>2022-01-01</small></time>
+<!--              작성자-->
+              <strong>Agh</strong>
+              <p>
+                Lorem ipsum dolor sit amet,consectetur adipiscing
+                Lorem ipsum dolor sit amet
+              </p>
+            </div>
+          </li>
+          <li>
+            <div>
+              <time><small>2022-01-01</small></time>
+              <strong>Agh</strong>
+              <p>
+                Lorem ipsum dolor sit amet,consectetur adipiscing
+                Lorem ipsum dolor sit amet
+              </p>
+            </div>
+          </li>
+        </ul>
+      </div>
+<!--      이전글 다음글 이정도만 하도록 만듦-->
+      <nav>
+        <a href="#">이전 글</a>
+        <a href="#">다음 글</a>
+      </nav>
+    </section>
+
+  </main>
+
+<footer id="footer"></footer>
+
+</body>
+</html>
