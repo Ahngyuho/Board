@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @ToString
 @EntityListeners(AuditingEntityListener.class) //얘도 가져옴
 @MappedSuperclass
-public class AuditingFields {
+public abstract class AuditingFields {
     //여기에 중복되는 메타 데이터들을 가져옴
     //메타 데이터
     //자동으로 jpa 가 세팅

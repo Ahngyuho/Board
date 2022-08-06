@@ -44,6 +44,7 @@ class JpaRepositoryTest {
                 .hasSize(123);
     }
 
+    @DisplayName("insert 테스트")
     @Test
     void givenTestData_whenInserting_thenWorksFine() {
         //Given
@@ -59,6 +60,7 @@ class JpaRepositoryTest {
     /**
      * update 테스트
      */
+    @DisplayName("update 테스트")
     @Test
     void givenTestData_whenUpdating_thenWorksFine() {
         //Given
@@ -73,6 +75,7 @@ class JpaRepositoryTest {
         assertThat(savedArticle).hasFieldOrPropertyWithValue("hashtag",updatedHashtag);
     }
 
+    @DisplayName("delete 테스트")
     @Test
     void givenTestData_whenDeleting_thenWorksFine() {
         //Given
