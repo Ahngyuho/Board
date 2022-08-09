@@ -10,11 +10,17 @@ import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
 import org.springframework.data.querydsl.binding.QuerydslBindings;
 import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 
+import java.util.List;
+
 @RepositoryRestResource
 public interface ArticleCommentRepository extends
         JpaRepository<ArticleComment,Long>,
         QuerydslPredicateExecutor<ArticleComment>,
         QuerydslBinderCustomizer<QArticleComment> {
+    //왜 Article_id 라고 했을까
+    //이건 댓글 id로 검색을 하는 것이 아니라 게시글로 댓글을 검색하는 것임
+    //이렇게 _id 해주면 Article 의 Id 로 들어가게 됨
+    List<ArticleComment> findByArticle_Id(Long articleId);
     @Override
     default void customize(QuerydslBindings bindings, QArticleComment root){
         //QuerydslPredicateExecutor<Article>

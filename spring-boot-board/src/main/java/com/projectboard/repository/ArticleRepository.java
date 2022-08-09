@@ -4,6 +4,8 @@ import com.projectboard.domain.Article;
 import com.projectboard.domain.QArticle;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.querydsl.QuerydslPredicateExecutor;
 import org.springframework.data.querydsl.binding.QuerydslBinderCustomizer;
@@ -15,7 +17,18 @@ public interface ArticleRepository extends
         JpaRepository<Article, Long>,
         QuerydslPredicateExecutor<Article>,//Article 검색기능 추가
         QuerydslBinderCustomizer<QArticle>//더 자세한 검색 가능하게
+        //
 {
+    //검색할 때 제목 내용 userId(UserAccount) Nickname(UserAccount)
+    //그리고 부분 검색 가능하도록 Containing 붙여줌
+    Page<Article> findByTitleContaining(String title, Pageable pageable);
+    Page<Article> findByContentContaining(String title, Pageable pageable);
+
+    //UserId는 UserAccount에 존재함 그래서 이런 식으로 접근
+    Page<Article> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
+    Page<Article> findByUserAccount_NicknameContaining(String title, Pageable pageable);
+    //Hashtag 는 카테고리임 완벽히 맞아야 의미가 있다
+    Page<Article> findByHashtag(String title, Pageable pageable);
     @Override
     default void customize(QuerydslBindings bindings, QArticle root){
         //QuerydslPredicateExecutor<Article>

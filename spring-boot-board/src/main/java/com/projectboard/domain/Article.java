@@ -25,7 +25,7 @@ import java.util.Set;
 //게시글
 //전체 클래스에 setter 열어두지 않음 자동으로 값이 들어가는 필드들이 있기 때문임
 @Getter
-@ToString
+@ToString(callSuper = true) //이건 mappedsuperclass 된 AuditingFields까지 출력하기 위함임
 @Table(indexes = {
         @Index(columnList = "title"),
         @Index(columnList = "hashtag"),
@@ -37,6 +37,9 @@ public class Article extends AuditingFields{
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     //mysql 의 auto increment 는 IDENTITY 방식임 이걸 해줘야함
     private Long id;
+
+    //연관관계 게시글에 user_account 가 들어감
+    @Setter @ManyToOne(optional = false) private UserAccount userAccount;
 
     @Setter @Column(nullable = false) private String title;
     @Setter @Column(nullable = false, length = 10000) private String content;
@@ -50,7 +53,7 @@ public class Article extends AuditingFields{
     @OneToMany(mappedBy = "article",cascade = CascadeType.ALL)    //"article"테이블과 연관된 것임을 알려줌 mappedBy 를 통해
     //cascade all 해준것은 게시글이 삭제되면 연관된 댓글들은 삭제
     //하지만 서비스 운영측면에서는 백업 목적으로 남겨둬야 해서 공부할 때만 이렇게 하자
-    @OrderBy("id") //정렬 기준
+    @OrderBy("createdAt DESC") //정렬 기준 시간순으로...
     @ToString.Exclude//그리고 이렇게 해주는 이유는 무한 참조를 막기 위함도 있다
                         //그리고 이 경우 One 쪽에 .Exclude해준 이유는 댓글(N)로부터 글을 참조하는 경우는 정상적이나
                         //1쪽에서 댓글 리스트를 모두 뽑아보는 것은 굳이 그럴 필요가 없음
@@ -66,7 +69,8 @@ public class Article extends AuditingFields{
     }
 
     //이 생성자를 private 로 만들자
-    private Article(String title, String content, String hashtag) {
+    private Article(UserAccount userAccount,String title, String content, String hashtag) {
+        this.userAccount = userAccount;
         this.title = title;
         this.content = content;
         this.hashtag = hashtag;
@@ -75,8 +79,8 @@ public class Article extends AuditingFields{
     //의도를 전달가능 도메인 Article을 생성하고자 할때
     //어떤 값을 필요로 한다는 것을 이것으로 가이드 해주는 것
     //제목 본문 해시태그를 넣어달라고 가이드 해준것
-    public static Article of(String title, String content, String hashtag) {
-        return new Article(title,content,hashtag);
+    public static Article of(UserAccount userAccount,String title, String content, String hashtag) {
+        return new Article(userAccount,title,content,hashtag);
     }
 
     //만약 이걸 list 에 담아서 사용한다면 어떨까
