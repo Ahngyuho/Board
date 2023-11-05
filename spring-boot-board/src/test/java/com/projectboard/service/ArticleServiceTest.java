@@ -4,9 +4,9 @@ import com.projectboard.domain.Article;
 import com.projectboard.domain.UserAccount;
 import com.projectboard.domain.type.SearchType;
 import com.projectboard.dto.ArticleDto;
-import com.projectboard.dto.ArticleWithCommentsDto;
 import com.projectboard.dto.UserAccountDto;
 import com.projectboard.repository.ArticleRepository;
+import com.projectboard.repository.UserAccountRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -17,9 +17,12 @@ import org.springframework.data.domain.Pageable;
 
 import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.BDDMockito.*;
+import static org.mockito.BDDMockito.given;
 
 @DisplayName("비즈니스 로직 - 게시판")
 @ExtendWith(MockitoExtension.class)
@@ -30,37 +33,97 @@ class ArticleServiceTest {
     @InjectMocks private ArticleService sut;
     //나머지는 Mock 이라고 줌
     @Mock private ArticleRepository articleRepository;
+    @Mock private UserAccountRepository userAccountRepository;
 
 
     @DisplayName("검색어 없이 게시글을 검색하면, 게시글 페이지를 반환한다")
     @Test
-    void givenNoSearchParameters_whenSearchingArticles_thenReturnsArticleList() {
+    void givenNoSearchParameters_whenSearchingArticles_thenReturnsArticleList() throws IllegalAccessException {
         //Given
         Pageable pageable = Pageable.ofSize(20);
-        BDDMockito.given(articleRepository.findAll(pageable)).willReturn(Page.empty());
+        given(articleRepository.findAll(pageable)).willReturn(Page.empty());
         //When
         //검색어와 검색 타입만 받게 만들자 type 은 enum?
         //searchArticles 는 이런 입력 파라미터를 받아서 ArticleDto list를 반환
         Page<ArticleDto> articles = sut.searchArticles(null,null,pageable);   //제목,본몬,id,넥네임,해시태그
         //Then
         assertThat(articles).isEmpty();
-        BDDMockito.then(articleRepository).should().findAll(pageable);
+        then(articleRepository).should().findAll(pageable);
     }
 
     @DisplayName("검색어와 함께 게시글을 검색하면, 게시글 페이지를 반환한다")
     @Test
-    void givenSearchParameters_whenSearchingArticle_thenReturnsArticle() {
+    void givenSearchParameters_whenSearchingArticle_thenReturnsArticle() throws IllegalAccessException {
         //Given
         SearchType searchType = SearchType.TITLE;
         String searchKeyword = "title";
         Pageable pageable = Pageable.ofSize(20);
-        BDDMockito.given(articleRepository.findByTitleContaining(searchKeyword,pageable)).willReturn(Page.empty());
+        given(articleRepository.findByTitleContaining(searchKeyword,pageable)).willReturn(Page.empty());
         //When
         Page<ArticleDto> articles = sut.searchArticles(searchType,searchKeyword,pageable);
         //Then
         assertThat(articles).isEmpty();
-        BDDMockito.then(articleRepository).should().findByTitleContaining(searchKeyword,pageable);
+        then(articleRepository).should().findByTitleContaining(searchKeyword,pageable);
     }
+
+    @DisplayName("검색어 없이 게시글을 해시태그 검색하면, 빈 페이지를 반환한다.")
+    @Test
+    void givenNoSearchParameters_whenSearchingArticleViaHashtag_thenReturnsEmptyPage() {
+        //Given
+        Pageable pageable = Pageable.ofSize(20);
+        //When
+        Page<ArticleDto> articles = sut.searchArticlesViaHashtag(null,pageable);
+        //Then
+        assertThat(articles).isEqualTo(Page.empty(pageable));
+        then(articleRepository).shouldHaveNoInteractions();
+    }
+
+    @DisplayName("검색어 없이 게시글을 해시태그 검색하면, 빈 페이지를 반환한다.")
+    @Test
+    void givenHashtag_whenSearchingArticleViaHashtag_thenReturnsPage() {
+        //Given
+        Pageable pageable = Pageable.ofSize(20);
+        String hashtag = "#java";
+        //empty 를 반환하는 이유는 과정이 더 중요하기 때문, 어떤 결과가 나오는지는 사실 moking 된 데이터기 때문에 전혀 중요하지 않음
+        //내가 뭘 넣는지 여기서 정하는 거기 때문에 결과도 내가 넣어준 데이터가 나와야 할 것이 자명함.
+        given(articleRepository.findByHashtag(hashtag,pageable)).willReturn(Page.empty(pageable));
+        //When
+        Page<ArticleDto> articles = sut.searchArticlesViaHashtag(hashtag,pageable);
+        //Then
+        assertThat(articles).isEqualTo(Page.empty(pageable));
+        then(articleRepository).should().findByHashtag(hashtag,pageable);
+    }
+
+    @DisplayName("게시글 수를 조회하면,게시글 수를 반환한다.")
+    @Test
+    void givenNothing_whenCountingAriticles_thenReturnsArticleCount() {
+        //given
+        long expected = 0L;
+        given(articleRepository.count()).willReturn(expected);
+
+        //when
+        long actual = sut.getArticleCount();
+
+        //then
+        assertThat(actual).isEqualTo(expected);
+        then(articleRepository).should().count();
+    }
+
+    @DisplayName("해시태그를 검색하면, 유니크 해시태그 리스트를 반환한다.")
+    @Test
+    //아무것도 주는것(given) 없고 호출하면 결과줘라.
+    void givenNothing_whenCalling_thenReturnsHashtags() {
+        //Given
+        List<String> expectedHashtags = List.of("#java", "#spring", "#boot");
+        given(articleRepository.findAllDistinctHashtags()).willReturn(expectedHashtags);
+        //When
+        List<String> actualHashtags = sut.getHashtags();
+        //Then
+        assertThat(actualHashtags).isEqualTo(expectedHashtags);
+        then(articleRepository).should().findAllDistinctHashtags();
+    }
+
+
 
     @DisplayName("게시글을 조회하면, 게시글을 반환한다.")
     @Test
@@ -68,25 +131,25 @@ class ArticleServiceTest {
         //Given
         Long articleId = 1L;
         Article article = createArticle();
-        BDDMockito.given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
+        given(articleRepository.findById(articleId)).willReturn(Optional.of(article));
 
         //When
         //에러 나면 예외 던져주기
-        ArticleWithCommentsDto dto = sut.getArticle(articleId);
+        ArticleDto dto = sut.getArticle(articleId);
         //Then
         assertThat(dto)
                 .hasFieldOrPropertyWithValue("title", article.getTitle())
                 .hasFieldOrPropertyWithValue("content", article.getContent())
                 .hasFieldOrPropertyWithValue("hashtag", article.getHashtag());
-        BDDMockito.then(articleRepository).should().findById(articleId);
+        then(articleRepository).should().findById(articleId);
     }
 
-    @DisplayName("없는 게시글을 조회하면, 예외를 던진다.")
+    @DisplayName("게시글이 없으면, 예외를 던진다.")
     @Test
     void givenNonexistentArticleId_whenSavingArticle_thenThrowsException() {
         //Given
         Long articleId = 0L;
-        BDDMockito.given(articleRepository.findById(articleId)).willReturn(Optional.empty());
+        given(articleRepository.findById(articleId)).willReturn(Optional.empty());
 
         //When
         Throwable t = catchThrowable(()->sut.getArticle(articleId));
@@ -94,7 +157,7 @@ class ArticleServiceTest {
         assertThat(t)
                 .isInstanceOf(EntityNotFoundException.class)
                 .hasMessage("게시글이 없습니다 - articleId: " + articleId);
-        BDDMockito.then(articleRepository).should().findById(articleId);
+        then(articleRepository).should().findById(articleId);
     }
 
     @DisplayName("게시글 정보를 입력하면, 게시글을 생성한다.")
@@ -103,13 +166,15 @@ class ArticleServiceTest {
         //Given
         ArticleDto dto = createArticleDto();
         //이게 저 saveArticle 에 있어야 한다는 거다
-        BDDMockito.given(articleRepository.save(ArgumentMatchers.any(Article.class))).willReturn(createArticle());
+        given(articleRepository.save(ArgumentMatchers.any(Article.class))).willReturn(createArticle());
+        given(userAccountRepository.getReferenceById(dto.getUserAccountDto().getUserId())).willReturn(createUserAccount());
 
         //When
         sut.saveArticle(dto);
 
         //Then
-        BDDMockito.then(articleRepository).should().save(ArgumentMatchers.any(Article.class));
+        then(userAccountRepository).should().getReferenceById(dto.getUserAccountDto().getUserId());
+        then(articleRepository).should().save(ArgumentMatchers.any(Article.class));
     }
 
     @DisplayName("게시글의 수정 정보를 입력하면, 게시글을 수정한다.")
@@ -120,12 +185,12 @@ class ArticleServiceTest {
         Article article = createArticle();
         ArticleDto dto = createArticleDto("새 타이틀","새 내용","#springboot");
         //getReferenceById 는 findById 와 유사한데 findById 는 쿼리를 날림
-        BDDMockito.given(articleRepository.getReferenceById(dto.id())).willReturn(article);
+        given(articleRepository.getReferenceById(dto.getId())).willReturn(article);
 
         //When
         //에러 나면 예외 던져주기
         //dto 를 update 전용으로 만들어주자
-        sut.updateArticle(dto);
+        sut.updateArticle(dto.getId(),dto);
 
         //Then
         //검사
@@ -135,10 +200,10 @@ class ArticleServiceTest {
         //근데 만약 데이터 베이스에 실제로 저장이 됐는지 확인하고 싶으면 mock 을 쓰면 안된다
         // Then
         assertThat(article)
-                .hasFieldOrPropertyWithValue("title", dto.title())
-                .hasFieldOrPropertyWithValue("content", dto.content())
-                .hasFieldOrPropertyWithValue("hashtag", dto.hashtag());
-        BDDMockito.then(articleRepository).should().getReferenceById(dto.id());
+                .hasFieldOrPropertyWithValue("title", dto.getTitle())
+                .hasFieldOrPropertyWithValue("content", dto.getContent())
+                .hasFieldOrPropertyWithValue("hashtag", dto.getHashtag());
+        then(articleRepository).should().getReferenceById(dto.getId());
     }
 
     @DisplayName("없는 게시글의 수정 정보를 입력하면, 경고 로그를 찍고 아무 것도 하지 않는다.")
@@ -146,13 +211,13 @@ class ArticleServiceTest {
     void givenNonexistentArticleInfo_whenUpdatingArticle_thenLogsWarningDoesNothing() {
         // Given
         ArticleDto dto = createArticleDto("새 타이틀", "새 내용", "#springboot");
-        BDDMockito.given(articleRepository.getReferenceById(dto.id())).willThrow(EntityNotFoundException.class);
+        given(articleRepository.getReferenceById(dto.getId())).willThrow(EntityNotFoundException.class);
 
         // When
-        sut.updateArticle(dto);
+        sut.updateArticle(dto.getId(),dto);
 
         // Then
-        BDDMockito.then(articleRepository).should().getReferenceById(dto.id());
+        then(articleRepository).should().getReferenceById(dto.getId());
     }
 
     @DisplayName("게시글의 ID를 입력하면, 게시글을 삭제한다")
@@ -160,13 +225,14 @@ class ArticleServiceTest {
     void givenArticleId_whenDeletingArticle_thenDeletesArticle() {
         // Given
         Long articleId = 1L;
-        BDDMockito.willDoNothing().given(articleRepository).deleteById(articleId);
+        String userId = "aghTest";
+        willDoNothing().given(articleRepository).deleteByIdAndUserAccount_UserId(articleId,userId);
 
         // When
-        sut.deleteArticle(1L);
+        sut.deleteArticle(1L,userId);
 
         // Then
-        BDDMockito.then(articleRepository).should().deleteById(articleId);
+        then(articleRepository).should().deleteByIdAndUserAccount_UserId(articleId,userId);
     }
 
     private UserAccount createUserAccount() {
@@ -206,7 +272,6 @@ class ArticleServiceTest {
 
     private UserAccountDto createUserAccountDto() {
         return UserAccountDto.of(
-                1L,
                 "uno",
                 "password",
                 "uno@mail.com",
