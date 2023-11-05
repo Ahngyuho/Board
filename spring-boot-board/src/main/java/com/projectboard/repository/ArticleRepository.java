@@ -2,6 +2,7 @@ package com.projectboard.repository;
 
 import com.projectboard.domain.Article;
 import com.projectboard.domain.QArticle;
+import com.projectboard.repository.querydsl.ArticleRepositoryCustom;
 import com.querydsl.core.types.dsl.DateTimeExpression;
 import com.querydsl.core.types.dsl.StringExpression;
 import org.springframework.data.domain.Page;
@@ -15,12 +16,14 @@ import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 @RepositoryRestResource
 public interface ArticleRepository extends
         JpaRepository<Article, Long>,
+        ArticleRepositoryCustom,
         QuerydslPredicateExecutor<Article>,//Article 검색기능 추가
         QuerydslBinderCustomizer<QArticle>//더 자세한 검색 가능하게
         //
 {
     //검색할 때 제목 내용 userId(UserAccount) Nickname(UserAccount)
     //그리고 부분 검색 가능하도록 Containing 붙여줌
+    //이것들은 queryDsl 이용해서 동적 쿼리로 만들 수도 있음
     Page<Article> findByTitleContaining(String title, Pageable pageable);
     Page<Article> findByContentContaining(String title, Pageable pageable);
 
@@ -29,6 +32,8 @@ public interface ArticleRepository extends
     Page<Article> findByUserAccount_NicknameContaining(String title, Pageable pageable);
     //Hashtag 는 카테고리임 완벽히 맞아야 의미가 있다
     Page<Article> findByHashtag(String title, Pageable pageable);
+
+    void deleteByIdAndUserAccount_UserId(Long articleId, String userId);
     @Override
     default void customize(QuerydslBindings bindings, QArticle root){
         //QuerydslPredicateExecutor<Article>
