@@ -2,37 +2,51 @@ package com.projectboard.dto.response;
 
 import com.projectboard.dto.ArticleCommentDto;
 import com.projectboard.dto.ArticleDto;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public record ArticleResponse(
-        Long id,
-        String title,
-        String content,
-        String hashtag,
-        LocalDateTime createdAt,
-        String email,
-        String nickname)
-        implements Serializable {
+@Getter @Setter
+public class ArticleResponse{
+    Long id;
+    String title;
+    String content;
+    String hashtag;
+    LocalDateTime createdAt;
+    String email;
+    String nickname;
+
+    @Builder
+    private ArticleResponse(Long id, String title, String content, String hashtag, LocalDateTime createdAt, String email, String nickname) {
+        this.id = id;
+        this.title = title;
+        this.content = content;
+        this.hashtag = hashtag;
+        this.createdAt = createdAt;
+        this.email = email;
+        this.nickname = nickname;
+    }
 
     public static ArticleResponse of(Long id, String title, String content, String hashtag, LocalDateTime createdAt, String email, String nickname) {
         return new ArticleResponse(id, title, content, hashtag, createdAt, email, nickname);
     }
 
     public static ArticleResponse from(ArticleDto dto) {
-        String nickname = dto.userAccountDto().nickname();
+        String nickname = dto.getUserAccountDto().getNickname();
         if (nickname == null || nickname.isBlank()) {
-            nickname = dto.userAccountDto().userId();
+            nickname = dto.getUserAccountDto().getUserId();
         }
 
         return new ArticleResponse(
-                dto.id(),
-                dto.title(),
-                dto.content(),
-                dto.hashtag(),
-                dto.createdAt(),
-                dto.userAccountDto().email(),
+                dto.getId(),
+                dto.getTitle(),
+                dto.getContent(),
+                dto.getHashtag(),
+                dto.getCreatedAt(),
+                dto.getUserAccountDto().getEmail(),
                 nickname
         );
     }

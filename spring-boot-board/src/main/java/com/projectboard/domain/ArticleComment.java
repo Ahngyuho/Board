@@ -26,7 +26,8 @@ public class ArticleComment extends AuditingFields{
                                 //cascade 는 none 댓글을 삭제해도 게시글에 영향가지 않도록 하기 위함
     private Article article;
 
-    @Setter @ManyToOne(optional = false) private UserAccount userAccount;
+//    @Setter @ManyToOne(optional = false) private UserAccount userAccount;
+@Setter @ManyToOne(optional = false) @JoinColumn(name = "userId") private UserAccount userAccount; // 유저 정보 (ID)
     @Setter @Column(nullable = false,length = 500) private String content;
 
 

@@ -8,17 +8,26 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.AuditorAware;
+import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
 
-@Disabled
 @DisplayName("JPA 연결 테스트")
 //슬라이스 테스트
 @DataJpaTest
 //이건 내가 만든 config 를 이 테스트에게 알려주기 위함임
-@Import(JpaConfig.class)
+//@Import(JpaConfig.class) 여기서는 JpaConfig 를 해주면 안된다.
+    //JpaConfig 를 보면 지금 Spring Security 를 사용하고 있다.
+    //그래서 이 슬라이스 테스트에서는 동작할 수 없다 그래서 아래의 해당 테스트 객체 전용 Jpa Auditor 를 만들어 준것이다.
+@Import(JpaRepositoryTest.TestJpaConfig.class)
+public
 class JpaRepositoryTest {
 
     private final ArticleRepository articleRepository;
@@ -97,4 +106,15 @@ class JpaRepositoryTest {
         assertThat(articleCommentRepository.count()).isEqualTo(previousArticleCommentCount - deletedCommentsSize);
     }
 
+
+    @EnableJpaAuditing
+    @TestConfiguration
+    public static class TestJpaConfig{
+        //이건 Spring Security 사용으로인한 Jpa Auditor 설정 변경으로
+        //위의 test 가 제대로 동작하지 않는 즉 Jpa Auditor 가
+        @Bean
+        public AuditorAware<String> auditorAware() {
+            return () -> Optional.of("agh");
+        }
+    }
 }
