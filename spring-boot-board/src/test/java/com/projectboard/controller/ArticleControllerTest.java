@@ -6,6 +6,7 @@ import com.projectboard.domain.constant.FormStatus;
 import com.projectboard.domain.type.SearchType;
 import com.projectboard.dto.ArticleDto;
 import com.projectboard.dto.ArticleWithCommentsDto;
+import com.projectboard.dto.HashtagDto;
 import com.projectboard.dto.UserAccountDto;
 import com.projectboard.dto.request.ArticleFormRequest;
 import com.projectboard.dto.response.ArticleResponse;
@@ -43,7 +44,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @DisplayName("view 컨트롤러 - 게시글")
 //이제 SecurityConfig 는 사용이 힘들다
-//
 @Import({TestSecurityConfig.class,FormDataEncoder.class})
 @WebMvcTest(ArticleController.class)
 class ArticleControllerTest {
@@ -271,7 +271,7 @@ class ArticleControllerTest {
     @Test
     void givenNewArticleInfo_whenRequesting_thenSaveNewArticle() throws Exception{
         //given
-        ArticleFormRequest articleRequest = ArticleFormRequest.of("new title", "new content", "#test");
+        ArticleFormRequest articleRequest = ArticleFormRequest.of("new title", "new content");
         willDoNothing().given(articleService).saveArticle(any(ArticleDto.class));
 
         //when & Then
@@ -313,7 +313,7 @@ class ArticleControllerTest {
     void givenUpdatedArticleInfo_whenRequesting_thenUpdatesNewArticle() throws Exception {
         // Given
         long articleId = 1L;
-        ArticleFormRequest articleRequest = ArticleFormRequest.of("new title", "new content", "#new");
+        ArticleFormRequest articleRequest = ArticleFormRequest.of("new title", "new content");
         willDoNothing().given(articleService).updateArticle(eq(articleId), any(ArticleDto.class));
 
         // When & Then
@@ -355,7 +355,7 @@ class ArticleControllerTest {
                 .userAccountDto(createUserAccountDto())
                 .title("title")
                 .content("content")
-                .hashtag("#java")
+                .hashtags(Set.of(HashtagDto.of("java")))
                 .build();
     }
 
@@ -365,7 +365,7 @@ class ArticleControllerTest {
                 Set.of(),
                 "title",
                 "content",
-                "#java",
+                Set.of(HashtagDto.of("java")),
                 LocalDateTime.now(),
                 "agh",
                 LocalDateTime.now(),

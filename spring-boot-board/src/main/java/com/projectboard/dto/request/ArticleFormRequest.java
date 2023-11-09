@@ -1,29 +1,34 @@
 package com.projectboard.dto.request;
 
 import com.projectboard.dto.ArticleDto;
+import com.projectboard.dto.HashtagDto;
 import com.projectboard.dto.UserAccountDto;
+
+import java.util.Set;
 
 public class ArticleFormRequest {
     public String title;
     public String content;
-    public String hashtag;
 
-    public ArticleFormRequest(String title, String content, String hashtag) {
+    public ArticleFormRequest(String title, String content) {
         this.title = title;
         this.content = content;
-        this.hashtag = hashtag;
     }
 
-    public static ArticleFormRequest of(String title, String content, String hashtag) {
-        return new ArticleFormRequest(title, content, hashtag);
+    public static ArticleFormRequest of(String title, String content) {
+        return new ArticleFormRequest(title, content);
     }
 
     public ArticleDto toDto(UserAccountDto userAccountDto) {
+        return toDto(userAccountDto, null);
+    }
+
+    public ArticleDto toDto(UserAccountDto userAccountDto, Set<HashtagDto> hashtagDtos) {
         return ArticleDto.builder()
                 .userAccountDto(userAccountDto)
                 .title(title)
                 .content(content)
-                .hashtag(hashtag)
+                .hashtags(hashtagDtos)
                 .build();
     }
 }
