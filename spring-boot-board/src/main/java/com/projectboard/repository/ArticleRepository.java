@@ -31,7 +31,7 @@ public interface ArticleRepository extends
     Page<Article> findByUserAccount_UserIdContaining(String userId, Pageable pageable);
     Page<Article> findByUserAccount_NicknameContaining(String title, Pageable pageable);
     //Hashtag 는 카테고리임 완벽히 맞아야 의미가 있다
-    Page<Article> findByHashtag(String title, Pageable pageable);
+    Page<Article> findByHashtags(String title, Pageable pageable);
 
     void deleteByIdAndUserAccount_UserId(Long articleId, String userId);
     @Override
@@ -41,13 +41,13 @@ public interface ArticleRepository extends
         //하지만 우리는 검색할 때 필요한 것들을 지정해둠
         //선택적으로 검색하게 하고 싶음
         bindings.excludeUnlistedProperties(true);
-        bindings.including(root.title,root.content,root.hashtag,root.createdAt,root.createdBy);
+        bindings.including(root.title, root.content, root.hashtags, root.createdAt, root.createdBy);
         //id 같은 경우는 인증기능 넣을 때 다시한번 봐보자
         //exatly 한 방식 말고 선택적 검색 하도록
         //first는 검색 파라미터를 하나만 받게 한 것임
-        bindings.bind(root.title).first(StringExpression::containsIgnoreCase);  //like '%${v}%'
+        bindings.bind(root.title).first(StringExpression::containsIgnoreCase);
         bindings.bind(root.content).first(StringExpression::containsIgnoreCase);
-        bindings.bind(root.hashtag).first(StringExpression::containsIgnoreCase);
+        bindings.bind(root.hashtags.any().hashtagName).first(StringExpression::containsIgnoreCase);
         //얘는 String 이 아님 DateTimeExpressions 라는 것이 있음
         //이건 어쩔 수 없이 full 로 다 써줘야 검색 가능할 듯
         bindings.bind(root.createdAt).first(DateTimeExpression::eq);

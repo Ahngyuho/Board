@@ -41,17 +41,6 @@ public class ArticleService {
         return search.execute(articleRepository, searchKeyword, pageable);
     }
 
-//    //단건 조회
-//    @Transactional(readOnly = true)
-//    public ArticleWithCommentsDto getArticle(Long articleId){
-//        //게시글을 조회하고 양방향 연관관계로 걸려있는 ArticleComment 도 같이 불러와야됨
-//        //그 dto 가 ArticleWithCommentDto 임
-//        return articleRepository.findById(articleId)
-//                .map(ArticleWithCommentsDto::from)
-//                //이게 Optional 로 반환돼서 이런식으로 해줘야 됨 예외는 있는거 사용
-//                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다 - articleId: " + articleId));
-//    }
-
     //단건 조회
     @Transactional(readOnly = true)
     public ArticleWithCommentsDto getArticleWithComments(Long articleId){
@@ -66,7 +55,8 @@ public class ArticleService {
     @Transactional(readOnly = true)
     public ArticleDto getArticle(Long articleId) {
         return articleRepository.findById(articleId)
-                .map(ArticleDto::from).orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다 - articleId: " + articleId));
+                .map(ArticleDto::from)
+                .orElseThrow(() -> new EntityNotFoundException("게시글이 없습니다 - articleId: " + articleId));
     }
 
 
@@ -91,7 +81,7 @@ public class ArticleService {
                 if (dto.getContent() != null) {
                     article.setContent(dto.getContent());
                 }
-                article.setHashtag(dto.getHashtag());
+                article.setContent(dto.getContent());
             }
         }catch (EntityNotFoundException e){
             log.warn("게시글 업데이트 실패. 게시글을 찾을 수 없습니다 - dto: {}",dto);
@@ -111,8 +101,7 @@ public class ArticleService {
         if (hashtag == null || hashtag.isBlank()) {
             return Page.empty(pageable);
         }
-        return articleRepository.findByHashtag(hashtag,pageable).map(ArticleDto::from);
-//        return Page.empty(pageable);
+        return articleRepository.findByHashtagNames(null, pageable).map(ArticleDto::from);
     }
 
     public List<String> getHashtags() {

@@ -30,7 +30,8 @@ public class SearchStrategyFactory {
                         articleRepository.findByUserAccount_NicknameContaining(searchKeyword, pageable).map(ArticleDto::from);
             case HASHTAG:
                 return (articleRepository, searchKeyword, pageable) ->
-                        articleRepository.findByHashtag(searchKeyword, pageable).map(ArticleDto::from);
+                        //TODO hashtag 에 대한 도메인 변경으로 인해 우선 null 을 전달
+                        articleRepository.findByHashtagNames(null, pageable).map(ArticleDto::from);
             default:
                 throw new IllegalArgumentException("Invalid SearchType");
         }
@@ -50,7 +51,8 @@ public class SearchStrategyFactory {
                 articleRepository.findByUserAccount_NicknameContaining(searchKeyword, pageable).map(ArticleDto::from));
 
         strategies.put(SearchType.HASHTAG, (articleRepository, searchKeyword, pageable) ->
-                articleRepository.findByHashtag(searchKeyword, pageable).map(ArticleDto::from));
+                //TODO hashtag 에 대한 도메인 변경으로 인해 우선 null 을 전달
+                articleRepository.findByHashtagNames(null, pageable).map(ArticleDto::from));
     }
 
     public SearchStrategy createSearch(SearchType searchType) {

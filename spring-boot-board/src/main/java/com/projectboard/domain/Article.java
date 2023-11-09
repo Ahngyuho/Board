@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -19,7 +20,6 @@ import java.util.Set;
 @ToString(callSuper = true) //이건 mappedsuperclass 된 AuditingFields까지 출력하기 위함임
 @Table(indexes = {
         @Index(columnList = "title"),
-        @Index(columnList = "hashtag"),
         @Index(columnList = "createdAt"),
         @Index(columnList = "createdBy")
 })
@@ -35,7 +35,17 @@ public class Article extends AuditingFields{
     @Setter @Column(nullable = false) private String title;
     @Setter @Column(nullable = false, length = 10000) private String content;
 
-    @Setter @Column private String hashtag;
+    @ToString.Exclude
+    @JoinTable(
+            name = "article_hashtag",
+            joinColumns = @JoinColumn(name = "articleId"),
+            inverseJoinColumns = @JoinColumn(name = "hashtagId")
+    )
+    //cascade 주목...
+    //cascade 는 삭제까지 허용하지 못하도록 함
+    //게시판 삭제로 hashtag 까지 삭제되는 것은 의도하지 않은 로직...
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private Set<Hashtag> hashtags = new LinkedHashSet<>();
 
     //one to many 관계임
     //딱 한번만 세팅할 것이므로 이렇게 설정
@@ -60,18 +70,30 @@ public class Article extends AuditingFields{
     }
 
     //이 생성자를 private 로 만들자
-    private Article(UserAccount userAccount,String title, String content, String hashtag) {
+    private Article(UserAccount userAccount,String title, String content) {
         this.userAccount = userAccount;
         this.title = title;
         this.content = content;
-        this.hashtag = hashtag;
     }
 
     //의도를 전달가능 도메인 Article을 생성하고자 할때
     //어떤 값을 필요로 한다는 것을 이것으로 가이드 해주는 것
     //제목 본문 해시태그를 넣어달라고 가이드 해준것
-    public static Article of(UserAccount userAccount,String title, String content, String hashtag) {
-        return new Article(userAccount,title,content,hashtag);
+    public static Article of(UserAccount userAccount, String title, String content) {
+        return new Article(userAccount, title, content);
+    }
+
+    //연관관계 기능 메서드
+    public void addHashtag(Hashtag hashtag) {
+        this.getHashtags().add(hashtag);
+    }
+
+    public void addHashtags(Collection<Hashtag> hashtags) {
+        this.getHashtags().addAll(hashtags);
+    }
+
+    public void clearHashtags() {
+        this.getHashtags().clear();
     }
 
     //만약 이걸 list 에 담아서 사용한다면 어떨까
@@ -87,11 +109,11 @@ public class Article extends AuditingFields{
 
         //id != null 은 막 만들어진 영속화 되지않고 db 에도 없는 것은
         //모두 동등성 검사를 false 함
-        return id != null && id.equals(article.id);
+        return this.getId() != null && id.equals(article.id);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id);
+        return Objects.hash(this.getId());
     }
 }

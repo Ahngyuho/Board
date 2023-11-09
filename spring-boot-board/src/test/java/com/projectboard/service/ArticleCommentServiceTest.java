@@ -2,6 +2,7 @@ package com.projectboard.service;
 
 import com.projectboard.domain.Article;
 import com.projectboard.domain.ArticleComment;
+import com.projectboard.domain.Hashtag;
 import com.projectboard.domain.UserAccount;
 import com.projectboard.dto.ArticleCommentDto;
 import com.projectboard.dto.UserAccountDto;
@@ -22,6 +23,7 @@ import javax.persistence.EntityNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -69,12 +71,7 @@ class ArticleCommentServiceTest {
         then(articleCommentRepository).should().findByArticle_Id(articleId);
     }
 
-    private ArticleComment createArticleComment(String content) {
-        return ArticleComment.of(Article.of(createUserAccount(),"title","content","hashtag"),
-                createUserAccount(),
-                content
-        );
-    }
+
 
     @DisplayName("댓글 정보를 입력하면 , 댓글 저장한다.")
     @Test
@@ -162,6 +159,14 @@ class ArticleCommentServiceTest {
         then(articleCommentRepository).should().deleteById(articleCommentId);
     }
 
+    private ArticleComment createArticleComment(String content) {
+        return ArticleComment.of(
+                createArticle(),
+                createUserAccount(),
+                content
+        );
+    }
+
     //이건 뭐냐면 테스트 용 데이터 세팅임
     //이런 방식을 fixture 라고 함 테스트 코드 내내 등장
     //근데 원래 따로 파일을 만들어서 작성하는데 리팩토링 여지를 남겨두고자 이렇게 함
@@ -200,13 +205,19 @@ class ArticleCommentServiceTest {
         );
     }
 
-    private Article createArticle(){
-        return Article.of(
+    private Article createArticle() {
+        Article article = Article.of(
                 createUserAccount(),
                 "title",
-                "content",
-                "#java"
+                "content"
         );
+        article.addHashtags(Set.of(createHashtag(article)));
+
+        return article;
+    }
+
+    private Hashtag createHashtag(Article article) {
+        return Hashtag.of("java");
     }
 
 

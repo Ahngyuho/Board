@@ -8,6 +8,8 @@ import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 //엔티티의 모든 정보를 들고 있게끔 함
 //나중에 응답에 필요한 것들만 선택해서 보내게끔 할 것임
@@ -17,27 +19,27 @@ public class ArticleDto {
     UserAccountDto userAccountDto;
     String title;
     String content;
-    String hashtag;
+    Set<HashtagDto> hashtags;
     LocalDateTime createdAt;
     String createdBy;
     LocalDateTime modifiedAt;
     String modifiedBy;
 
     @Builder
-    private ArticleDto(Long id, UserAccountDto userAccountDto, String title, String content, String hashtag, LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
+    private ArticleDto(Long id, UserAccountDto userAccountDto, String title, String content, Set<HashtagDto> hashtags, LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
         this.id = id;
         this.userAccountDto = userAccountDto;
         this.title = title;
         this.content = content;
-        this.hashtag = hashtag;
+        this.hashtags = hashtags;
         this.createdAt = createdAt;
         this.createdBy = createdBy;
         this.modifiedAt = modifiedAt;
         this.modifiedBy = modifiedBy;
     }
 
-    public static ArticleDto of(Long id, UserAccountDto userAccountDto, String title, String content, String hashtag, LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
-        return new ArticleDto(id, userAccountDto, title, content, hashtag, createdAt, createdBy, modifiedAt, modifiedBy);
+    public static ArticleDto of(Long id, UserAccountDto userAccountDto, String title, String content, Set<HashtagDto> hashtags, LocalDateTime createdAt, String createdBy, LocalDateTime modifiedAt, String modifiedBy) {
+        return new ArticleDto(id, userAccountDto, title, content, hashtags, createdAt, createdBy, modifiedAt, modifiedBy);
     }
 
     //엔티티를 입력하면 dto 로 반환
@@ -47,7 +49,9 @@ public class ArticleDto {
                 UserAccountDto.from(entity.getUserAccount()),
                 entity.getTitle(),
                 entity.getContent(),
-                entity.getHashtag(),
+                entity.getHashtags().stream()
+                        .map(HashtagDto::from)
+                        .collect(Collectors.toUnmodifiableSet()),
                 entity.getCreatedAt(),
                 entity.getCreatedBy(),
                 entity.getModifiedAt(),
@@ -63,8 +67,7 @@ public class ArticleDto {
                 userAccount,
                 //userAccountDto
                 title,
-                content,
-                hashtag
+                content
         );
     }
 }
