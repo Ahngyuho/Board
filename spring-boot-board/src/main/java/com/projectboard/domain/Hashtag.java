@@ -21,7 +21,10 @@ public class Hashtag extends AuditingFields{
     private Long id;
 
     @ToString.Exclude
+    //cascade 옵션 X
+    //User 측에 Hashtag 를 관리하는 기능을 주지 않음
     @ManyToMany(mappedBy = "hashtags")
+    //순서 개념이 있는 set
     private Set<Article> articles = new LinkedHashSet<>();
 
     @Setter
