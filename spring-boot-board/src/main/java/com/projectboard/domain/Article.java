@@ -36,6 +36,7 @@ public class Article extends AuditingFields{
     @Setter @Column(nullable = false, length = 10000) private String content;
 
     @ToString.Exclude
+    //연관관계 테이블의 주인에는 @JoinTable 을 사용
     @JoinTable(
             name = "article_hashtag",
             joinColumns = @JoinColumn(name = "articleId"),
@@ -44,6 +45,10 @@ public class Article extends AuditingFields{
     //cascade 주목...
     //cascade 는 삭제까지 허용하지 못하도록 함
     //게시판 삭제로 hashtag 까지 삭제되는 것은 의도하지 않은 로직...
+    //게시판에서 hashtags 의 컬렉션에 접근 가능
+    //1 : N 하나의 게시글이 여러개의 해시태그를 가질 수 있다.
+    //PERSIST 는 INSERT , MERGE 는 UPDATE -> 이 작업 시 hashtag 도 함께 동기화
+    //DELETE 는 안됨 다 대 다 라서 게시글을 하나 지우게 되면
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private Set<Hashtag> hashtags = new LinkedHashSet<>();
 
